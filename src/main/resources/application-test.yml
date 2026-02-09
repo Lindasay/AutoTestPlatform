@@ -1,0 +1,16 @@
+# 测试环境配置（预留，部署时替换为测试库地址）
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://test-mysql:3306/test_platform?useUnicode=true&characterEncoding=utf8mb4&useSSL=false&serverTimezone=Asia/Shanghai
+    username: test_user
+    password: test_pass
+
+server:
+  port: 8081
+  servlet:
+    context-path: /auto-test
+
+logging:
+  level:
+    com.auto.test.platform: warn

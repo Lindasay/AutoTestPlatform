@@ -1,0 +1,29 @@
+# 开发环境专属配置
+spring:
+  # 数据库配置
+  datasource:
+    # MySQL连接地址（替换为自己的MySQL地址/端口/账号/密码）
+    url: jdbc:mysql://localhost:3306/test_platform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowMultiQueries=true&rewriteBatchedStatements=true
+    driver-class-name: com.mysql.cj.jdbc.Driver # Spring Boot3.x兼容写法
+    username: root # MySQL用户名
+    password: 123456 # MySQL密码
+    # Web配置
+  web:
+    resources:
+      static-locations: classpath:/static/
+
+# 服务器配置
+server:
+  port: 8080  # 项目启动端口
+  servlet:
+    context-path: /auto-test # 项目根路径，访问地址：http://localhost:8080/auto-test
+  tomcat:
+    uri-encoding: UTF-8 # 解决中文乱码
+
+# 日志配置（开发环境打印详细日志）
+logging:
+  level:
+    com.auto.test.platform.mapper: debug # Mapper层日志级别
+    com.auto.test.platform: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"

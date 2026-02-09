@@ -1,0 +1,22 @@
+# 全局配置
+spring:
+  application:
+    name: auto-test-platform # 项目名称，注册中心/日志中使用
+  profiles:
+    active: dev # 默认激活开发环境，可快速切换为test/prod
+  thymeleaf:
+    cache: false # 开发环境关闭页面缓存，修改前端页面无需重启项目
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai # 全局时间时区，解决时区偏移问题
+
+# MyBatis-Plus 全局配置（通用）
+mybatis-plus:
+  type-aliases-package: com.auto.test.platform.entity # 实体类别名包
+
+  global-config:
+    db-config:
+      id-type: auto # 主键自增（与MySQL表一致）
+      logic-delete-field: deleted # 逻辑删除字段（后续扩展用）
+      logic-delete-value: 1 # 逻辑删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
