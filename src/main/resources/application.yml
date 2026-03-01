@@ -6,17 +6,33 @@ spring:
     active: dev # 默认激活开发环境，可快速切换为test/prod
   thymeleaf:
     cache: false # 开发环境关闭页面缓存，修改前端页面无需重启项目
-  jackson:
+  Jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai # 全局时间时区，解决时区偏移问题
 
+
 # MyBatis-Plus 全局配置（通用）
 mybatis-plus:
-  type-aliases-package: com.auto.test.platform.entity # 实体类别名包
-
+  configuration:
+    map-underscore-to-camel-case: true # 下划线转驼峰（适配数据库字段与实体类属性）
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境打印SQL，便于调试
+  mapper-locations: classpath:mapper/**/*.xml # 扫描mapper/xml目录下的SQL文件
+  type-aliases-package: com.auto.test.platform.entity # 实体类别名扫描（简化Mapper代码）
   global-config:
     db-config:
-      id-type: auto # 主键自增（与MySQL表一致）
-      logic-delete-field: deleted # 逻辑删除字段（后续扩展用）
-      logic-delete-value: 1 # 逻辑删除值
-      logic-not-delete-value: 0 # 逻辑未删除值
+      id-type: AUTO # 主键自增（与数据库表一致）
+      table-underline: true # 表名下划线命名（适配数据库表）
+
+# Knife4j配置（替代Swagger3，接口文档，第3天接口开发用）
+knife4j:
+  enable: true
+  openapi:
+    title: 企业级自动化测试平台接口文档
+    description: 自动化测试平台所有接口详情，包含项目、用例、任务、报告等模块接口
+    version: 1.0.0
+    contact:
+      name: Lindsay
+      email: dev@example.com
+    servers:
+      - url: http://localhost:8080/auto-test
+        description: 开发环境接口地址

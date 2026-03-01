@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="AutoTestPlatformSuite" verbose="2" parallel="false">
+    <parameter name="baseUrl" value="http://localhost:8080/auto-test"/>
+
+    <test name="AllModulesTest" preserve-order="true">
+        <groups>
+            <run>
+                <!-- 定义执行顺序：user → project → testcase -->
+                <include name="user"/>
+                <include name="project"/>
+                <include name="testcase"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="com.auto.test.platform.script.user.UserScript"/>
+            <class name="com.auto.test.platform.script.project.ProjectScript"/>
+            <class name="com.auto.test.platform.script.testcase.TestCaseScript"/>
+        </classes>
+    </test>
+
+    <listeners>
+        <listener class-name="com.auto.test.platform.common.util.RetryListener"/>
+        <listener class-name="com.auto.test.platform.listener.ExtentReportListener"/>
+        <listener class-name="com.auto.test.platform.common.util.GlobalTestListener"></listener>
+    </listeners>
+</suite>

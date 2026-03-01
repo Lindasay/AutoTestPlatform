@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 报告数据实体（对应report_data表，已适配MySQL默认值问题）
+ * 测试报告实体类（与report_data表一一对应）
  */
 @Data
 @TableName("report_data")
@@ -20,26 +20,45 @@ public class ReportData {
     @TableField("task_id")
     private Long taskId;
 
+    /**
+     * 关联项目ID（对应数据库project_id字段）
+     */
     @TableField("project_id")
     private Long projectId;
 
-    @TableField("total_case")
-    private Integer totalCase;
+    /**
+     * 通过用例数（对应数据库pass_count字段）
+     */
+    @TableField("pass_count")
+    private Integer passCount;
 
-    @TableField("success_case")
-    private Integer successCase;
+    /**
+     * 失败用例数（对应数据库fail_count字段）
+     */
+    @TableField("fail_count")
+    private Integer failCount;
 
-    @TableField("fail_case")
-    private Integer failCase;
+    /**
+     * 总用例数（对应数据库total_count字段）
+     */
+    @TableField("total_count")
+    private Integer totalCount;
 
-    @TableField("success_rate")
-    private BigDecimal successRate;
+    /**
+     * 通过率（对应数据库pass_rate字段，保留2位小数）
+     */
+    @TableField("pass_rate")
+    private BigDecimal passRate;
 
-    /** Allure报告存储路径（绝对路径/相对路径） */
-    @TableField("report_path")
-    private String reportPath;
+    /**
+     * 报告详情（对应数据库report_content字段，JSON格式）
+     */
+    @TableField("report_content")
+    private String reportContent;
 
-    /** 创建时间（自动填充） */
+    /**
+     * 创建时间（自动填充）
+     */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver # Spring Boot3.x兼容写法
     username: root # MySQL用户名
     password: 123456 # MySQL密码
-    # Web配置
+    # Web配置（跨域，第3天接口调用用）
   web:
     resources:
       static-locations: classpath:/static/

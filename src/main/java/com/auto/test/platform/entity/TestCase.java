@@ -5,40 +5,45 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-
 /**
- * 测试用例实体表（对应test_case表）
+ * 测试用例实体类（与test_case表一一对应）
  */
 @Data
-@TableName("'test_case'")
+@TableName("test_case")
 public class TestCase {
     /** 用例ID，自增主键 */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 所属项目ID（关联project表id）*/
-    @TableField("'project_id'")
+    /**
+     * 关联项目ID（对应数据库project_id字段，外键）
+     */
+    @TableField("project_id")
     private Long projectId;
 
-    /** 用例名称 */
+    /**
+     * 用例名称（对应数据库case_name字段，非空）
+     */
     @TableField("case_name")
     private String caseName;
 
-    /** 用例类型：1-接口 2-UI （关联CaseTypeEnum）*/
+    /**
+     * 用例类型（对应数据库case_type字段，1-接口用例，2-UI用例）
+     */
     @TableField("case_type")
-    private String caseType;
+    private Integer caseType;
 
-    /** 用例内容（JSON格式，存储请求信息/操作步骤）*/
+    /**
+     * 用例内容（对应数据库case_content字段，JSON格式，非空）
+     */
     @TableField("case_content")
     private String caseContent;
 
-    /** 用例标签（如冒烟/回归，逗号分隔）*/
-    @TableField("expect_result")
-    private String expectResult;
-
-    /** 状态：1-启用 0-禁用（关联StatusEnum）*/
+    /**
+     * 用例内容（对应数据库case_content字段，JSON格式，非空）
+     */
     @TableField("status")
-    private String status;
+    private Integer status;
 
     /** 创建时间（自动填充） */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
@@ -47,6 +52,4 @@ public class TestCase {
     /** 更新时间（自动填充） */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
-
-
 }

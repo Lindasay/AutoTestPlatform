@@ -1,13 +1,18 @@
 package com.auto.test.platform.common.exception;
 
+
+import com.auto.test.platform.common.constant.ResponseCodeConstant;
 import com.auto.test.platform.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.BindException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.stream.Collectors;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * 全局异常处理器（Spring Boot3.x）
@@ -18,34 +23,69 @@ import java.util.stream.Collectors;
 @RestControllerAdvice //全局异常拦截，仅处理Controller层
 public class GlobalExceptionHandler {
 
+    //拦截自定义业务异常（核心，业务逻辑异常用这个）
+    @ExceptionHandler(value = BusinessException.class)
+    public Result<?> handleBusinessException(BusinessException e) {
+        log.error("业务异常：{}",e.getMessage(),e);
+        return Result.fail(e.getCode(),e.getMessage());
+    }
+
+    //拦截参数校验异常如@NotBlank、@Min等注解的校验失败）
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<?> handleParamValidException(MethodArgumentNotValidException e) {
+        BindingResult bindingResult = e.getBindingResult();
+        //获取第一个校验失败的字段和消息
+        FieldError fieldError = bindingResult.getFieldError();
+        String message = fieldError != null ? fieldError.getDefaultMessage() : null;
+        log.error("参数校验异常：{}", message);
+        return Result.fail(ResponseCodeConstant.PARAM_ERROR, message);
+    }
+
+
     /**
-     * 处理参数校验异常（@Valid/@Validated）
+     * 处理缺少路径参数异常（如接口路径中未传递id）
      */
-    @ExceptionHandler(BindException.class)
-    public Result<Void> handleBindException(BindException e) {
-        //拼接所有参数错误信息
-        String msg = e.getFieldErrors().stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining("; "));
-        log.warn("参数校验失败：{}", msg);
-        return Result.fail(400,msg);
+    @ExceptionHandler(MissingPathVariableException.class)
+    public Result<?> handleMissingPathVariableException(MissingPathVariableException e) {
+        log.error("缺少路径参数异常:{}",e.getMessage(),e);
+        String message = "缺少必要的路径参数：" + e.getVariableName();
+        return Result.fail(ResponseCodeConstant.PARAM_ERROR, message);
     }
 
     /**
-     * 处理自定义运行时异常（业务层手动抛出）
+     * 处理缺少请求参数异常（如GET请求未传递pageNum）
      */
-    @ExceptionHandler(RuntimeException.class)
-    public Result<Void> handleRuntimeException(RuntimeException e) {
-        log.error("业务运行异常",e);
-        return Result.fail(e.getMessage());
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public Result<?> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+        log.error("缺少请求参数异常：{}",e.getMessage(),e);
+        String message = "缺少必要的请求参数"+e.getParameterName();
+        return Result.fail(ResponseCodeConstant.PARAM_ERROR, message);
     }
 
     /**
-     * 处理所有未捕获的异常（兜底）
+     * 处理参数类型不匹配异常（如路径参数id应为long，却传递字符串）
      */
-    @ExceptionHandler(Exception.class)
-    public Result<Void> handleException(Exception e) {
-        log.error("系统未知异常：" , e);
-        return Result.fail("系统内部错误，请联系管理员");
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public Result<?> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        log.error("参数类型不匹配异常：{}",e.getMessage(),e);
+        String message = "参数类型不匹配，参数" +  e.getName() + "应属于" + e.getRequiredType().getSimpleName() + "类型";
+        return Result.fail(ResponseCodeConstant.PARAM_ERROR, message);
     }
+
+    /**
+     * 处理数据库重复建异常（如唯一索引异常）
+     */
+    @ExceptionHandler(DuplicateKeyException.class)
+    public Result<?> handleDuplicateKeyException(DuplicateKeyException e) {
+        log.error("数据库重复键异常：{}",e.getMessage(),e);
+        return Result.fail(ResponseCodeConstant.DATA_ALREADY_EXIST,"数据已存在，请勿重复提交");
+    }
+
+    //拦截所有未捕获异常（兜底，避免系统崩溃）
+    @ExceptionHandler(value = Exception.class)
+    public Result<?> handleException(Exception e) {
+        log.error("系统异常：{}",e.getMessage(),e);
+        return Result.fail(ResponseCodeConstant.SYSTEM_ERROR,"系统异常，请联系管理员");
+    }
+
 }

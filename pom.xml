@@ -21,7 +21,6 @@
 	<properties>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- 核心兼容版本（解决factoryBeanObjectType问题） -->
 		<mybatis-plus.version>3.5.7</mybatis-plus.version>
@@ -31,11 +30,15 @@
 		<lombok.version>1.18.30</lombok.version>
 		<checkstyle.version>10.12.6</checkstyle.version>
 		<rest-assured.version>5.4.0</rest-assured.version>
+		<testng.version>7.9.0</testng.version>
+		<extentreports.version>5.1.1</extentreports.version>
+		<jsoup.version>1.17.2</jsoup.version>
 		<playwright.version>1.40.0</playwright.version>
 		<hutool.version>5.8.22</hutool.version>
 		<easyexcel.version>3.3.2</easyexcel.version>
 		<fastjson2.version>2.0.42</fastjson2.version>
 		<allure-junit5.version>2.24.0</allure-junit5.version>
+		<knife4j.version>4.4.0</knife4j.version>
 	</properties>
 
 	<dependencies>
@@ -63,6 +66,18 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-quartz</artifactId>
+		</dependency>
+
+		<!-- 1. 权限控制框架：Spring Security（实现用户登录、权限验证） -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- Thymeleaf（前端页面，架构templates目录所需） -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
 		<!-- ==================== 数据库相关依赖（核心修复） ==================== -->
@@ -119,19 +134,36 @@
 			</exclusions>
 		</dependency>
 
-		<!-- ==================== 自动化测试核心依赖 ==================== -->
-		<!-- 接口自动化（RestAssured） -->
+		<!-- ==================== 自动化测试核心依赖 （架构automation层所需，提前引入，避免后续冲突） ==================== -->
+		<!-- 1. 接口请求：RestAssured -->
 		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>${rest-assured.version}</version>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
+		</dependency>
+
+		<!-- 2. 测试框架：TestNG -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>${testng.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- 3. 可视化报告：ExtentReports -->
+		<dependency>
+			<groupId>com.aventstack</groupId>
+			<artifactId>extentreports</artifactId>
+			<version>${extentreports.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- 4. 报告样式依赖：jsoup（解决中文乱码/样式错乱） -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>${jsoup.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- UI自动化（Playwright） -->
@@ -161,7 +193,7 @@
 			<version>${fastjson2.version}</version>
 		</dependency>
 
-		<!-- ==================== 测试相关依赖 ==================== -->
+		<!-- ==================== 测试相关依赖 (单元测试/集成测试)==================== -->
 		<!-- Spring Boot测试核心 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -201,16 +233,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- JUnit5（适配Spring Boot 3，已由spring-boot-starter-test管控版本，无需指定版本） -->
+		<!-- 4. Knife4j（接口文档，替代Swagger，美观、易用，第3天接口测试用） -->
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
+			<groupId>com.github.xiaoymin</groupId>
+			<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+			<version>${knife4j.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -251,45 +278,6 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-
-			<!-- CheckStyle代码规范插件（可选，已注释） -->
-			<!--            <plugin>-->
-			<!--                <groupId>org.apache.maven.plugins</groupId>-->
-			<!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-			<!--                <version>${checkstyle.version}</version>-->
-			<!--                <executions>-->
-			<!--                    <execution>-->
-			<!--                        <id>checkstyle-validation</id>-->
-			<!--                        <phase>validate</phase>-->
-			<!--                        <goals>-->
-			<!--                            <goal>check</goal>-->
-			<!--                        </goals>-->
-			<!--                    </execution>-->
-			<!--                </executions>-->
-			<!--                <configuration>-->
-			<!--                    <configLocation>checkstyle.xml</configLocation>-->
-			<!--                    <encoding>UTF-8</encoding>-->
-			<!--                    <failOnViolation>true</failOnViolation>-->
-			<!--                    <failOnError>true</failOnError>-->
-			<!--                    <includes>**/*.java</includes>-->
-			<!--                </configuration>-->
-			<!--            </plugin>-->
-
-			<!-- MyBatis-Plus代码生成插件（后续生成Mapper/Service用，可选） -->
-			<!--            <plugin>-->
-			<!--                <groupId>com.baomidou</groupId>-->
-			<!--                <artifactId>mybatis-plus-maven-plugin</artifactId>-->
-			<!--                <version>${mybatis-plus.version}</version>-->
-			<!--                <executions>-->
-			<!--                    <execution>-->
-			<!--                        <id>GenerateCode</id>-->
-			<!--                        <phase>compile</phase>-->
-			<!--                        <goals>-->
-			<!--                            <goal>generate</goal>-->
-			<!--                        </goals>-->
-			<!--                    </execution>-->
-			<!--                </executions>-->
-			<!--            </plugin>-->
 		</plugins>
 
 		<!-- 资源文件过滤（确保yml/properties文件生效） -->
@@ -342,17 +330,4 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>mybatis-plus</id>
-			<name>MyBatis-Plus Plugin Repository</name>
-			<url>https://repo1.maven.org/maven2/</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>aliyunmaven</id>
-			<name>阿里云插件仓库</name>
-			<url>https://maven.aliyun.com/repository/public</url>
-		</pluginRepository>
-	</pluginRepositories>
 </project>

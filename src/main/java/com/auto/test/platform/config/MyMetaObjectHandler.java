@@ -7,15 +7,14 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 /**
- * MyBatis-Plus字段自动填充处理器
- * 自动填充create_time、update_time字段
+ * 实体类字段自动填充配置（架构config层必备）
+ * 作用：自动填充实体类中的createTime、updateTime字段，无需手动设置，减少冗余代码
  */
 @Component //// 注入Spring容器，让MyBatis-Plus扫描到
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
     /**
-     * 插入数据时自动填充
-     * @param metaObject 元对象
+     * 插入操作时，自动填充createTime、updateTime字段
      */
     @Override
     public void insertFill(MetaObject metaObject) {
