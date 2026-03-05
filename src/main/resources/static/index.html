@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接口自动化测试平台 - 完整修复版</title>
+    <!-- 引入Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- 引入Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            font-size: 14px;
+        }
+
+        .card {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 20px;
+            font-weight: 600;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 12px 20px;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0b5ed7 100%);
+            border-color: var(--primary-color);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #157347 100%);
+            border-color: var(--success-color);
+        }
+
+        .schedule-item {
+            border-left: 4px solid var(--info-color);
+            margin-bottom: 10px;
+        }
+
+        .schedule-active {
+            border-left-color: var(--success-color);
+        }
+
+        .schedule-inactive {
+            border-left-color: var(--secondary-color);
+        }
+
+        .cron-badge {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .json-editor {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            height: 150px;
+            resize: vertical;
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        /* 执行中心样式 */
+        .result-content {
+            display: none;
+        }
+
+        .case-item {
+            border-left: 3px solid transparent;
+            margin-bottom: 8px;
+        }
+
+        .case-item.success {
+            border-left-color: var(--success-color);
+            background-color: rgba(25, 135, 84, 0.05);
+        }
+
+        .case-item.fail {
+            border-left-color: var(--danger-color);
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+
+        .stat-card {
+            padding: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card h5 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .stat-card p {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .json-viewer {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .time-badge {
+            background-color: #e9ecef;
+            color: #495057;
+            font-size: 0.85rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="page-title"><i class="bi bi-rocket"></i> 接口自动化测试平台 - 完整修复版</h2>
+        </div>
+    </div>
+
+    <!-- 核心标签页 -->
+    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="data-manage-tab" data-bs-toggle="tab" data-bs-target="#data-manage" type="button" role="tab">
+                <i class="bi bi-database"></i> 数据管理
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="execute-tab" data-bs-toggle="tab" data-bs-target="#execute" type="button" role="tab">
+                <i class="bi bi-play-circle"></i> 执行中心
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab">
+                <i class="bi bi-clock"></i> 定时任务
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="report-tab" data-bs-toggle="tab" data-bs-target="#report" type="button" role="tab">
+                <i class="bi bi-bar-chart"></i> 报告查看
+            </button>
+        </li>
+    </ul>
+
+    <!-- 标签页内容 -->
+    <div class="tab-content" id="mainTabsContent">
+        <!-- 1. 数据管理标签页 -->
+        <div class="tab-pane fade show active" id="data-manage" role="tabpanel">
+            <div class="row">
+                <!-- 新增项目 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-folder-plus"></i> 新增测试项目
+                        </div>
+                        <div class="card-body">
+                            <form id="addProjectForm">
+                                <div class="mb-3">
+                                    <label class="form-label">项目名称 <span class="text-danger">*</span></label>
+                                    <input type="text" id="projectName" class="form-control" placeholder="请输入项目名称（如：用户中心）" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">项目描述</label>
+                                    <textarea id="projectDesc" class="form-control" rows="2" placeholder="请输入项目描述（选填）"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> 保存项目
+                                </button>
+                                <div id="projectMsg" class="mt-2"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新增测试用例 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-file-plus"></i> 新增接口用例
+                        </div>
+                        <div class="card-body">
+                            <form id="addCaseForm">
+                                <div class="mb-3">
+                                    <label class="form-label">所属项目 <span class="text-danger">*</span></label>
+                                    <select id="caseProjectId" class="form-select" required>
+                                        <option value="">请选择项目（先新增项目）</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">用例名称 <span class="text-danger">*</span></label>
+                                    <input type="text" id="caseName" class="form-control" placeholder="请输入用例名称（如：登录接口）" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">请求URL <span class="text-danger">*</span></label>
+                                    <input type="text" id="requestUrl" class="form-control" placeholder="如：http://localhost:8080/api/login" required style="width: 100%;">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">请求方法 <span class="text-danger">*</span></label>
+                                    <select id="requestMethod" class="form-select" required>
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">请求参数（JSON格式）</label>
+                                    <textarea id="requestParams" class="form-control json-editor" placeholder='如：{"username":"admin","password":"123456"}'></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">预期结果（包含此字段即成功）</label>
+                                    <input type="text" id="expectedResult" class="form-control" placeholder="如：success或200">
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-save"></i> 保存用例
+                                </button>
+                                <div id="caseMsg" class="mt-2"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 项目/用例列表 -->
+                <div class="col-12 mt-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-list"></i> 已创建的项目/用例</span>
+                            <button id="refreshListBtn" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新列表
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="dataList">
+                                <p class="text-muted text-center">暂无数据，请先新增项目/用例</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 执行中心标签页 -->
+        <div class="tab-pane fade" id="execute" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-play-circle"></i> 执行控制
+                        </div>
+                        <div class="card-body">
+                            <!-- 单条执行 -->
+                            <div class="mb-3">
+                                <label class="form-label"><strong>单条用例执行</strong></label>
+                                <div class="input-group">
+                                    <input type="text" id="singleCaseId" class="form-control" placeholder="输入用例ID">
+                                    <button id="execSingleBtn" class="btn btn-primary">
+                                        <i class="bi bi-play"></i> 执行
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 批量执行 -->
+                            <div class="mb-3">
+                                <label class="form-label"><strong>批量用例执行（按项目）</strong></label>
+                                <div class="input-group">
+                                    <select id="batchProjectId" class="form-select">
+                                        <option value="">请选择项目</option>
+                                    </select>
+                                    <button id="execBatchBtn" class="btn btn-success">
+                                        <i class="bi bi-list-check"></i> 批量执行
+                                    </button>
+                                </div>
+                                <div class="form-text text-muted mt-1">
+                                    执行该项目下所有接口用例
+                                </div>
+                            </div>
+
+                            <!-- 加载中提示 -->
+                            <div id="loading" class="loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">执行中，请稍候...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 聚合报告概览 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-bar-chart"></i> 聚合报告概览
+                        </div>
+                        <div class="card-body">
+                            <div id="reportOverview" class="text-center">
+                                <p class="text-muted">请先执行用例生成报告</p>
+                            </div>
+                            <!-- 通过率图表 -->
+                            <div class="mt-3">
+                                <canvas id="passRateChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 执行结果详情 -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-table"></i> 执行结果详情</span>
+                            <button id="viewHtmlReportBtn" class="btn btn-sm btn-outline-primary" disabled>
+                                <i class="bi bi-browser-chrome"></i> 查看HTML报告
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="resultContent" style="display: none;">
+                                <div class="report-detail" id="caseResultList"></div>
+                            </div>
+                            <div id="emptyResult" class="text-center text-muted py-5">
+                                暂无执行结果
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 定时任务标签页 -->
+        <div class="tab-pane fade" id="schedule" role="tabpanel">
+            <div class="row">
+                <!-- 左侧：新增定时任务 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-clock"></i> 新增定时任务
+                        </div>
+                        <div class="card-body">
+                            <form id="addScheduleForm">
+                                <div class="mb-3">
+                                    <label class="form-label">所属项目 <span class="text-danger">*</span></label>
+                                    <select id="scheduleProjectId" class="form-select" required>
+                                        <option value="">请选择项目</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">任务名称 <span class="text-danger">*</span></label>
+                                    <input type="text" id="scheduleName" class="form-control" placeholder="请输入定时任务名称" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Cron表达式 <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="text" id="cronExpression" class="form-control" placeholder="如：0 0 2 * * ?（每天凌晨2点）" required>
+                                        <button type="button" class="btn btn-outline-secondary" id="cronHelpBtn">
+                                            <i class="bi bi-question-circle"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">格式：秒 分 时 日 月 周 年（可选）</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">状态</label>
+                                    <select id="scheduleStatus" class="form-select">
+                                        <option value="1">启用</option>
+                                        <option value="0">禁用</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> 保存定时任务
+                                </button>
+                                <div id="scheduleMsg" class="mt-2"></div>
+                            </form>
+
+                            <!-- Cron表达式帮助 -->
+                            <div class="card mt-3" id="cronHelp" style="display: none;">
+                                <div class="card-header">
+                                    <i class="bi bi-info-circle"></i> Cron表达式帮助
+                                </div>
+                                <div class="card-body">
+                                    <h6>常用Cron表达式示例：</h6>
+                                    <ul class="mb-0">
+                                        <li><code>0 0 2 * * ?</code> 每天凌晨2点执行</li>
+                                        <li><code>0 0 9-18 * * ?</code> 每天9点到18点整点执行</li>
+                                        <li><code>0 0/30 9-18 * * ?</code> 每天9点到18点每30分钟执行</li>
+                                        <li><code>0 0 9 ? * MON-FRI</code> 工作日每天9点执行</li>
+                                        <li><code>0 0 12 1 * ?</code> 每月1号中午12点执行</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：定时任务列表 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-list-check"></i> 定时任务列表</span>
+                            <button id="refreshScheduleBtn" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新列表
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">按项目筛选</label>
+                                <select id="filterProjectId" class="form-select">
+                                    <option value="">所有项目</option>
+                                </select>
+                            </div>
+                            <div id="scheduleList">
+                                <p class="text-muted text-center">暂无定时任务，请先新增</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 报告查看标签页 -->
+        <div class="tab-pane fade" id="report" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-file-earmark-bar-graph"></i> 历史聚合报告
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">选择项目</label>
+                                <select id="reportProjectId" class="form-select">
+                                    <option value="">请选择项目</option>
+                                </select>
+                                <button id="queryReportBtn" class="btn btn-sm btn-primary mt-2">
+                                    <i class="bi bi-search"></i> 查询报告
+                                </button>
+                            </div>
+                            <div id="historyReportList" class="report-detail">
+                                <p class="text-muted text-center">请选择项目并查询</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 执行历史记录 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-clock-history"></i> 执行历史记录
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">选择项目</label>
+                                <select id="historyProjectId" class="form-select">
+                                    <option value="">请选择项目</option>
+                                </select>
+                                <button id="queryHistoryBtn" class="btn btn-sm btn-primary mt-2">
+                                    <i class="bi bi-search"></i> 查询历史
+                                </button>
+                            </div>
+                            <div id="taskHistoryList" class="report-detail">
+                                <p class="text-muted text-center">请选择项目并查询</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 全局配置
+    const baseUrl = "http://localhost:8080/auto-test";
+    let currentReport = null;
+    let passRateChart = null;
+    let currentScheduleId = null;
+    let projectMap = {};
+
+    // ==================== 通用工具方法 ====================
+    function formatDateTime(dateStr) {
+        if (!dateStr) return '未知时间';
+        const date = new Date(dateStr);
+        return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+    }
+
+    function showMsg(elId, msg, isSuccess) {
+        const el = document.getElementById(elId);
+        el.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'} alert-dismissible fade show" role="alert">
+                ${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+        setTimeout(() => el.innerHTML = '', 3000);
+    }
+
+    // ==================== 数据管理模块 ====================
+    // 加载项目列表
+    function loadProjectList() {
+        fetch(`${baseUrl}/project/page?pageNum=1&pageSize=100`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data?.records) {
+                    const projects = data.data.records;
+
+                    // 更新项目映射
+                    projects.forEach(p => {
+                        projectMap[p.id] = p.projectName;
+                    });
+
+                    // 填充所有项目下拉框
+                    const selectors = [
+                        'caseProjectId', 'batchProjectId', 'scheduleProjectId',
+                        'reportProjectId', 'historyProjectId', 'filterProjectId'
+                    ];
+
+                    selectors.forEach(selector => {
+                        const sel = document.getElementById(selector);
+                        if (sel) {
+                            sel.innerHTML = selector === 'caseProjectId'
+                                ? '<option value="">请选择项目（先新增项目）</option>'
+                                : '<option value="">请选择项目</option>';
+                            projects.forEach(p => {
+                                const option = document.createElement('option');
+                                option.value = p.id;
+                                option.textContent = p.projectName;
+                                sel.appendChild(option);
+                            });
+                        }
+                    });
+
+                    loadDataList(projects);
+                }
+            })
+            .catch(err => console.error('加载项目列表失败:', err));
+    }
+
+    // 加载项目/用例列表
+    function loadDataList(projects) {
+        if (!projects || projects.length === 0) {
+            document.getElementById('dataList').innerHTML = '<p class="text-muted text-center">暂无数据，请先新增项目/用例</p>';
+            return;
+        }
+
+        let html = '<div class="accordion" id="dataAccordion">';
+        projects.forEach((project, index) => {
+            html += `
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading${index}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}">
+                            <span class="badge bg-primary me-2">项目</span>
+                            ID: ${project.id} - ${project.projectName}
+                        </button>
+                    </h2>
+                    <div id="collapse${index}" class="accordion-collapse collapse" data-bs-parent="#dataAccordion">
+                        <div class="accordion-body" id="caseList_${project.id}">
+                            <p class="text-muted">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        document.getElementById('dataList').innerHTML = html;
+
+        projects.forEach((project, index) => {
+            fetch(`${baseUrl}/testCase/page?pageNum=1&pageSize=100&projectId=${project.id}`)
+                .then(res => res.json())
+                .then(caseData => {
+                    const el = document.getElementById(`caseList_${project.id}`);
+                    if (caseData.code === 200 && caseData.data?.records) {
+                        const cases = caseData.data.records;
+                        if (cases.length === 0) {
+                            el.innerHTML = '<p class="text-muted">该项目下暂无用例</p>';
+                            return;
+                        }
+                        let caseHtml = '<div class="list-group">';
+                        cases.forEach(c => {
+                            let caseContent = {};
+                            try { caseContent = JSON.parse(c.caseContent || '{}'); } catch (e) {}
+                            caseHtml += `
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">
+                                            <span class="badge bg-success me-2">用例</span>
+                                            ID: ${c.id} - ${c.caseName}
+                                        </h6>
+                                        <small class="text-muted">接口用例</small>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small>URL：${caseContent.requestUrl || '未配置'}</small><br>
+                                        <small>方法：${caseContent.requestMethod || '未配置'}</small><br>
+                                        <small>预期结果：${caseContent.expectedResult || '未配置'}</small>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        caseHtml += '</div>';
+                        el.innerHTML = caseHtml;
+                    } else {
+                        el.innerHTML = '<p class="text-danger">加载用例失败</p>';
+                    }
+                })
+                .catch(err => el.innerHTML = '<p class="text-danger">加载用例失败</p>');
+        });
+    }
+
+    // 新增项目
+    document.getElementById('addProjectForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const projectName = document.getElementById('projectName').value.trim();
+        if (!projectName) {
+            showMsg('projectMsg', '请输入项目名称', false);
+            return;
+        }
+
+        fetch(`${baseUrl}/project/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                projectName: projectName,
+                projectDesc: document.getElementById('projectDesc').value.trim(),
+                status: 1
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    showMsg('projectMsg', '项目新增成功！', true);
+                    this.reset();
+                    loadProjectList();
+                } else {
+                    showMsg('projectMsg', `新增失败：${data.msg || '未知错误'}`, false);
+                }
+            })
+            .catch(err => showMsg('projectMsg', `新增异常：${err.message}`, false));
+    });
+
+    // 新增用例
+    document.getElementById('addCaseForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const projectId = document.getElementById('caseProjectId').value;
+        const caseName = document.getElementById('caseName').value.trim();
+        const requestUrl = document.getElementById('requestUrl').value.trim();
+
+        if (!projectId || !caseName || !requestUrl) {
+            showMsg('caseMsg', '标*的字段为必填项', false);
+            return;
+        }
+
+        const caseContent = {
+            requestUrl: requestUrl,
+            requestMethod: document.getElementById('requestMethod').value,
+            requestParams: document.getElementById('requestParams').value.trim() || '{}',
+            expectedResult: document.getElementById('expectedResult').value.trim(),
+            timeout: 3000
+        };
+
+        fetch(`${baseUrl}/testCase/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                projectId: parseInt(projectId),
+                caseName: caseName,
+                caseType: 1,
+                caseContent: JSON.stringify(caseContent),
+                status: 1
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    showMsg('caseMsg', '用例新增成功！', true);
+                    this.reset();
+                    loadProjectList();
+                } else {
+                    showMsg('caseMsg', `新增失败：${data.msg || '未知错误'}`, false);
+                }
+            })
+            .catch(err => showMsg('caseMsg', `新增异常：${err.message}`, false));
+    });
+
+    // 刷新列表
+    document.getElementById('refreshListBtn').addEventListener('click', loadProjectList);
+
+    // ==================== 定时任务模块 ====================
+    // 显示/隐藏Cron表达式帮助
+    document.getElementById('cronHelpBtn').addEventListener('click', function() {
+        const helpEl = document.getElementById('cronHelp');
+        helpEl.style.display = helpEl.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // 新增定时任务
+    document.getElementById('addScheduleForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const projectId = document.getElementById('scheduleProjectId').value;
+        const scheduleName = document.getElementById('scheduleName').value.trim();
+        const cronExpression = document.getElementById('cronExpression').value.trim();
+        const status = document.getElementById('scheduleStatus').value;
+
+        if (!projectId || !scheduleName || !cronExpression) {
+            showMsg('scheduleMsg', '标*的字段为必填项', false);
+            return;
+        }
+
+        const scheduleData = {
+            projectId: parseInt(projectId),
+            scheduleName: scheduleName,
+            cronExpression: cronExpression,
+            status: parseInt(status)
+        };
+
+        const url = currentScheduleId
+            ? `${baseUrl}/schedule/update`
+            : `${baseUrl}/schedule/add`;
+
+        const method = currentScheduleId ? 'PUT' : 'POST';
+
+        if (currentScheduleId) {
+            scheduleData.id = currentScheduleId;
+        }
+
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(scheduleData)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    const msg = currentScheduleId ? '定时任务修改成功！' : '定时任务新增成功！';
+                    showMsg('scheduleMsg', msg, true);
+                    this.reset();
+                    currentScheduleId = null;
+                    loadScheduleList();
+                } else {
+                    showMsg('scheduleMsg', `操作失败：${data.msg || '未知错误'}`, false);
+                }
+            })
+            .catch(err => showMsg('scheduleMsg', `操作异常：${err.message}`, false));
+    });
+
+    // 加载定时任务列表
+    function loadScheduleList() {
+        const projectId = document.getElementById('filterProjectId').value;
+        const url = projectId
+            ? `${baseUrl}/schedule/list/${projectId}`
+            : `${baseUrl}/schedule/getEnableList`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    const schedules = Array.isArray(data.data) ? data.data : [];
+                    if (schedules.length === 0) {
+                        document.getElementById('scheduleList').innerHTML =
+                            '<p class="text-muted text-center">暂无定时任务</p>';
+                        return;
+                    }
+
+                    let html = '<div class="list-group">';
+                    schedules.forEach(schedule => {
+                        const statusClass = schedule.status === 1 ? 'schedule-active' : 'schedule-inactive';
+                        const statusBadge = schedule.status === 1
+                            ? '<span class="badge bg-success">启用</span>'
+                            : '<span class="badge bg-secondary">禁用</span>';
+
+                        // 获取项目名称
+                        const projectName = projectMap[schedule.projectId] || `项目${schedule.projectId}`;
+
+                        html += `
+                            <div class="list-group-item schedule-item ${statusClass}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">${schedule.scheduleName}</h6>
+                                    <div>${statusBadge}</div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">项目：${projectName} | Cron：<span class="badge cron-badge">${schedule.cronExpression}</span></small>
+                                    <small class="d-block text-muted">创建时间：${formatDateTime(schedule.createTime)}</small>
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editSchedule(${schedule.id})">编辑</button>
+                                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteSchedule(${schedule.id})">删除</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    document.getElementById('scheduleList').innerHTML = html;
+                } else {
+                    document.getElementById('scheduleList').innerHTML =
+                        '<p class="text-muted text-center">加载定时任务失败</p>';
+                }
+            })
+            .catch(err => {
+                console.error('加载定时任务失败:', err);
+                document.getElementById('scheduleList').innerHTML =
+                    '<p class="text-danger text-center">加载定时任务失败</p>';
+            });
+    }
+
+    // 编辑定时任务
+    function editSchedule(scheduleId) {
+        currentScheduleId = scheduleId;
+
+        // 先获取所有任务
+        fetch(`${baseUrl}/schedule/getEnableList`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    const schedules = data.data;
+                    const schedule = schedules.find(s => s.id === scheduleId);
+                    if (schedule) {
+                        document.getElementById('scheduleProjectId').value = schedule.projectId;
+                        document.getElementById('scheduleName').value = schedule.scheduleName;
+                        document.getElementById('cronExpression').value = schedule.cronExpression;
+                        document.getElementById('scheduleStatus').value = schedule.status;
+
+                        // 滚动到表单
+                        document.getElementById('addScheduleForm').scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            })
+            .catch(err => console.error('获取定时任务详情失败:', err));
+    }
+
+    // 删除定时任务
+    function deleteSchedule(scheduleId) {
+        if (confirm('确定要删除这个定时任务吗？')) {
+            fetch(`${baseUrl}/schedule/delete/${scheduleId}`, {
+                method: 'DELETE'
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        showMsg('scheduleMsg', '定时任务删除成功！', true);
+                        loadScheduleList();
+                    } else {
+                        showMsg('scheduleMsg', `删除失败：${data.msg}`, false);
+                    }
+                })
+                .catch(err => showMsg('scheduleMsg', `删除异常：${err.message}`, false));
+        }
+    }
+
+    // 刷新定时任务列表
+    document.getElementById('refreshScheduleBtn').addEventListener('click', loadScheduleList);
+
+    // 筛选定时任务
+    document.getElementById('filterProjectId').addEventListener('change', loadScheduleList);
+
+    // ==================== 执行中心模块 ====================
+    // 初始化图表
+    function initChart() {
+        const ctx = document.getElementById('passRateChart').getContext('2d');
+        passRateChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['成功', '失败'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#198754', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: { display: true, text: '用例执行结果分布' }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+
+    // 修复后的updateReportOverview函数
+    function updateReportOverview(rawData) {
+        console.log('updateReportOverview 原始数据:', rawData);
+
+        if (!rawData) {
+            console.error('updateReportOverview: rawData is undefined');
+            showMsg('reportOverview', '执行结果数据为空', false);
+            return;
+        }
+
+        let caseResults = [];
+        let reportInfo = {};
+        let extentReportPath = '';
+
+        // 情况1：执行中心返回的数据结构（有task、report、executeResult字段）
+        if (rawData.task && rawData.report && rawData.executeResult) {
+            console.log('检测到执行中心数据结构');
+
+            // 首先尝试从reportContent中获取caseResults
+            if (rawData.report && rawData.report.reportContent) {
+                try {
+                    const reportContent = JSON.parse(rawData.report.reportContent);
+                    if (reportContent.caseResults && Array.isArray(reportContent.caseResults)) {
+                        caseResults = reportContent.caseResults;
+                        console.log('从reportContent中获取到caseResults:', caseResults.length);
+                    }
+                } catch (e) {
+                    console.error('解析reportContent失败:', e);
+                }
+            }
+
+            // 如果reportContent中没有，尝试从executeResult中获取
+            if (caseResults.length === 0 && rawData.executeResult) {
+                try {
+                    let parsedExecuteResult = rawData.executeResult;
+                    if (typeof parsedExecuteResult === 'string') {
+                        parsedExecuteResult = JSON.parse(parsedExecuteResult);
+                    }
+
+                    if (parsedExecuteResult.caseResults && Array.isArray(parsedExecuteResult.caseResults)) {
+                        caseResults = parsedExecuteResult.caseResults;
+                        console.log('从executeResult中获取到caseResults:', caseResults.length);
+                    } else if (parsedExecuteResult.caseId !== undefined) {
+                        // 单条执行
+                        caseResults = [parsedExecuteResult];
+                    }
+                } catch (e) {
+                    console.error('解析executeResult失败:', e);
+                }
+            }
+
+            // 从report中获取统计信息
+            reportInfo = {
+                executeTime: rawData.report.createTime,
+                totalCount: rawData.report.totalCount,
+                passCount: rawData.report.passCount,
+                failCount: rawData.report.failCount,
+                totalDuration: rawData.task.executeDuration || 0,
+                averageDuration: rawData.task.executeDuration || 0,
+                passRate: rawData.report.passRate
+            };
+
+            // 如果有reportContent，从中获取更多统计信息
+            if (rawData.report && rawData.report.reportContent) {
+                try {
+                    const reportContent = JSON.parse(rawData.report.reportContent);
+                    reportInfo.totalDuration = reportContent.totalDuration || reportInfo.totalDuration;
+                    reportInfo.averageDuration = reportContent.averageDuration || reportInfo.averageDuration;
+                    reportInfo.executeTime = reportContent.executeTime || reportInfo.executeTime;
+                } catch (e) {
+                    console.error('解析reportContent获取统计信息失败:', e);
+                }
+            }
+
+            extentReportPath = rawData.extentReportPath || rawData.report.extentReportPath || '';
+
+        }
+        // 情况2：报告查看返回的数据结构（reportContent字段）
+        else if (rawData.reportContent) {
+            console.log('检测到报告查看数据结构');
+
+            try {
+                const parsedContent = JSON.parse(rawData.reportContent);
+                console.log('报告详情 - 解析的reportContent:', parsedContent);
+
+                if (Array.isArray(parsedContent.caseResults)) {
+                    // 批量执行报告
+                    caseResults = parsedContent.caseResults;
+                } else if (parsedContent.caseId !== undefined) {
+                    // 单条执行报告
+                    caseResults = [parsedContent];
+                }
+
+                reportInfo = {
+                    ...parsedContent,
+                    ...rawData
+                };
+
+                extentReportPath = parsedContent.extentReportPath || rawData.extentReportPath || '';
+
+            } catch (e) {
+                console.error('解析reportContent失败:', e);
+                caseResults = [];
+                reportInfo = rawData;
+                extentReportPath = rawData.extentReportPath || '';
+            }
+        }
+        // 情况3：直接包含caseResults的数据
+        else if (rawData.caseResults && Array.isArray(rawData.caseResults)) {
+            console.log('检测到直接包含caseResults的数据结构');
+            caseResults = rawData.caseResults;
+            reportInfo = { ...rawData };
+            extentReportPath = rawData.extentReportPath || '';
+        }
+        // 情况4：其他情况
+        else {
+            console.log('未知数据结构:', rawData);
+            caseResults = [];
+            reportInfo = rawData;
+            extentReportPath = rawData.extentReportPath || '';
+        }
+
+        console.log('处理后的数据:', {
+            caseResults: caseResults,
+            caseResultsCount: caseResults.length,
+            reportInfo: reportInfo,
+            extentReportPath: extentReportPath
+        });
+
+        // 存储当前报告
+        currentReport = {
+            ...reportInfo,
+            extentReportPath: extentReportPath
+        };
+
+        // 更新概览信息
+        updateReportUI(reportInfo, extentReportPath);
+
+        // 渲染用例结果
+        renderCaseResults(caseResults);
+    }
+
+    // 更新报告UI
+    function updateReportUI(reportInfo, extentReportPath) {
+        const overviewHtml = `
+            <div class="row mb-3">
+                <div class="col-4"><div class="stat-card"><p class="mb-1 text-muted">执行时间</p><h5>${formatDateTime(reportInfo.executeTime || reportInfo.createTime)}</h5></div></div>
+                <div class="col-4"><div class="stat-card"><p class="mb-1 text-muted">总用例数</p><h5 class="text-dark">${reportInfo.totalCount || 0}</h5></div></div>
+                <div class="col-4"><div class="stat-card"><p class="mb-1 text-muted">通过率</p><h5 class="${(parseFloat(reportInfo.passRate) || 0) > 80 ? 'text-success' : 'text-danger'}">${(parseFloat(reportInfo.passRate) || 0).toFixed(2)}%</h5></div></div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-4"><div class="stat-card"><p class="mb-1 text-muted">成功数</p><h4 class="text-success">${reportInfo.passCount || 0}</h4></div></div>
+                <div class="col-4"><div class="stat-card"><p class="mb-1 text-muted">失败数</p><h4 class="text-danger">${reportInfo.failCount || 0}</h4></div></div>
+                <div class="col-4"><div class="stat-card"><p class="mb-1 text-muted">总耗时</p><h6>${reportInfo.totalDuration || 0}ms</h6></div></div>
+            </div>
+        `;
+        document.getElementById('reportOverview').innerHTML = overviewHtml;
+
+        // 更新图表
+        if (passRateChart) {
+            passRateChart.data.datasets[0].data = [
+                reportInfo.passCount || 0,
+                reportInfo.failCount || 0
+            ];
+            passRateChart.update();
+        }
+
+        // 显示结果区域
+        document.getElementById('resultContent').style.display = 'block';
+        document.getElementById('emptyResult').style.display = 'none';
+        document.getElementById('viewHtmlReportBtn').disabled = !extentReportPath;
+
+        // 如果有平均耗时，添加到概览
+        if (reportInfo.averageDuration) {
+            const avgDurationHtml = `<div class="row mt-2"><div class="col-12"><div class="time-badge">平均耗时: ${reportInfo.averageDuration.toFixed(2)}ms</div></div></div>`;
+            document.getElementById('reportOverview').innerHTML += avgDurationHtml;
+        }
+    }
+
+    // 修复渲染函数，处理多层嵌套的JSON
+    function renderCaseResults(caseResults) {
+        if (!caseResults) {
+            console.log('caseResults is null/undefined, using empty array');
+            caseResults = [];
+        }
+
+        if (!Array.isArray(caseResults)) {
+            console.log('caseResults is not array, converting to array');
+            if (caseResults && typeof caseResults === 'object') {
+                caseResults = [caseResults];
+            } else {
+                caseResults = [];
+            }
+        }
+
+        console.log('处理后的caseResults:', caseResults);
+        console.log('caseResults长度:', caseResults.length);
+
+        if (caseResults.length === 0) {
+            document.getElementById('caseResultList').innerHTML = `
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> 暂无详细的用例执行结果数据
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="list-group">';
+        caseResults.forEach((caseItem, index) => {
+            console.log(`处理第 ${index} 个用例:`, caseItem);
+
+            if (!caseItem) {
+                console.log(`第 ${index} 个用例为空，跳过`);
+                return;
+            }
+
+            let caseId = '';
+            let caseName = '未知用例';
+            let success = false;
+            let duration = 0;
+            let executeTime = '';
+            let responseData = '';
+            let errorMsg = '';
+
+            // 提取基本信息
+            if (caseItem.caseId !== undefined) {
+                caseId = caseItem.caseId.toString();
+            } else if (caseItem.id !== undefined) {
+                caseId = caseItem.id.toString();
+            } else {
+                caseId = `case_${index}`;
+            }
+
+            if (caseItem.caseName) {
+                caseName = caseItem.caseName;
+            } else if (caseItem.name) {
+                caseName = caseItem.name;
+            }
+
+            success = Boolean(caseItem.success);
+            duration = caseItem.executeDuration || caseItem.duration || 0;
+            executeTime = caseItem.executeTime || '';
+            responseData = caseItem.responseData || '';
+            errorMsg = caseItem.errorMsg || '';
+
+            const statusClass = success ? 'success' : 'fail';
+            const statusBadge = success ?
+                '<span class="badge bg-success">成功</span>' :
+                '<span class="badge bg-danger">失败</span>';
+
+            const errorMsgHtml = errorMsg ?
+                `<div class="text-danger mt-1"><small><strong>错误：</strong>${errorMsg}</small></div>` : '';
+
+            let responseHtml = '';
+            if (responseData) {
+                try {
+                    // 尝试解析responseData
+                    let parsedResponse = responseData;
+                    if (typeof parsedResponse === 'string') {
+                        parsedResponse = JSON.parse(parsedResponse);
+                    }
+
+                    // 如果是字符串，尝试再次解析
+                    if (typeof parsedResponse === 'string') {
+                        try {
+                            parsedResponse = JSON.parse(parsedResponse);
+                        } catch (e2) {
+                            console.warn('二次解析responseData失败，保持原样:', e2);
+                        }
+                    }
+
+                    // 格式化JSON显示
+                    const responseStr = JSON.stringify(parsedResponse, null, 2);
+
+                    responseHtml = `
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="viewResponse('${caseId}_${index}')">查看响应</button>
+                            <div id="response_${caseId}_${index}" class="mt-2 json-viewer" style="display: none;">
+                                <pre class="mb-0">${responseStr}</pre>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) {
+                    console.warn('解析响应数据失败:', e);
+                    // 如果解析失败，直接显示原始数据
+                    responseHtml = `
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="viewResponse('${caseId}_${index}')">查看响应</button>
+                            <div id="response_${caseId}_${index}" class="mt-2 json-viewer" style="display: none;">
+                                <pre class="mb-0">${responseData}</pre>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            html += `
+                <div class="list-group-item case-item ${statusClass}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">${caseName} (ID: ${caseId})</h6>
+                        <div>${statusBadge} <span class="text-muted ms-2">${duration}ms</span></div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">执行时间：${formatDateTime(executeTime)}</small>
+                    </div>
+                    ${responseHtml}
+                    ${errorMsgHtml}
+                </div>
+            `;
+        });
+        html += '</div>';
+        document.getElementById('caseResultList').innerHTML = html;
+    }
+
+    // 查看响应
+    window.viewResponse = function(caseId) {
+        const el = document.getElementById(`response_${caseId}`);
+        if (el) {
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    };
+
+    // 单条执行
+    document.getElementById('execSingleBtn').addEventListener('click', async function() {
+        const caseId = document.getElementById('singleCaseId').value.trim();
+        if (!caseId) {
+            showMsg('reportOverview', '请输入用例ID', false);
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        try {
+            const res = await fetch(`${baseUrl}/testCase/execute/${caseId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await res.json();
+            console.log('单条执行返回:', result);
+            if (result.code === 200) {
+                updateReportOverview(result.data);
+                showMsg('reportOverview', '单条用例执行完成！', true);
+            } else {
+                showMsg('reportOverview', `执行失败：${result.msg}`, false);
+            }
+        } catch (e) {
+            showMsg('reportOverview', `执行异常：${e.message}`, false);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+
+    // 批量执行
+    document.getElementById('execBatchBtn').addEventListener('click', async function() {
+        const projectId = document.getElementById('batchProjectId').value;
+        if (!projectId) {
+            showMsg('reportOverview', '请选择项目', false);
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        try {
+            const res = await fetch(`${baseUrl}/testCase/executeBatch/${projectId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await res.json();
+            console.log('批量执行返回:', result);
+            if (result.code === 200) {
+                updateReportOverview(result.data);
+                showMsg('reportOverview', '批量用例执行完成！', true);
+            } else {
+                showMsg('reportOverview', `执行失败：${result.msg}`, false);
+            }
+        } catch (e) {
+            showMsg('reportOverview', `执行异常：${e.message}`, false);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+
+    // 查看HTML报告
+    document.getElementById('viewHtmlReportBtn').addEventListener('click', function() {
+        if (currentReport?.extentReportPath) {
+            window.open(`${baseUrl}${currentReport.extentReportPath}`, '_blank');
+        } else {
+            showMsg('reportOverview', '暂无HTML报告可查看', false);
+        }
+    });
+
+    // ==================== 报告查看模块 ====================
+    document.getElementById('queryReportBtn').addEventListener('click', function() {
+        const projectId = document.getElementById('reportProjectId').value;
+        if (!projectId) {
+            showMsg('historyReportList', '请选择项目', false);
+            return;
+        }
+
+        fetch(`${baseUrl}/reportData/list/${projectId}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log('报告列表返回:', data);
+                if (data.code === 200 && data.data?.length > 0) {
+                    let html = '<div class="list-group">';
+                    data.data.forEach(report => {
+                        html += `
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">报告ID: ${report.id} - ${formatDateTime(report.createTime)}</h6>
+                                    <span class="badge bg-info">通过率：${report.passRate}%</span>
+                                </div>
+                                <div class="mt-2"><small>总用例：${report.totalCount} | 成功：${report.passCount} | 失败：${report.failCount}</small></div>
+                                <button class="btn btn-sm btn-outline-primary mt-2" onclick="viewReportDetail(${report.id})">查看详情</button>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    document.getElementById('historyReportList').innerHTML = html;
+                } else {
+                    document.getElementById('historyReportList').innerHTML = '<p class="text-muted text-center">该项目暂无历史报告</p>';
+                }
+            })
+            .catch(err => showMsg('historyReportList', `查询失败：${err.message}`, false));
+    });
+
+    // 查看报告详情
+    window.viewReportDetail = function(reportId) {
+        fetch(`${baseUrl}/reportData/detail/${reportId}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log('报告详情返回:', data);
+                if (data.code === 200) {
+                    updateReportOverview(data.data);
+                    new bootstrap.Tab(document.getElementById('execute-tab')).show();
+                } else {
+                    showMsg('historyReportList', `查看失败：${data.msg}`, false);
+                }
+            })
+            .catch(err => showMsg('historyReportList', `查看异常：${err.message}`, false));
+    };
+
+    // 查询执行历史
+    document.getElementById('queryHistoryBtn').addEventListener('click', function() {
+        const projectId = document.getElementById('historyProjectId').value;
+        if (!projectId) {
+            showMsg('taskHistoryList', '请选择项目', false);
+            return;
+        }
+
+        fetch(`${baseUrl}/testCase/executionHistory/${projectId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    const tasks = data.data;
+                    if (tasks.length === 0) {
+                        document.getElementById('taskHistoryList').innerHTML =
+                            '<p class="text-muted text-center">该项目暂无执行历史</p>';
+                        return;
+                    }
+
+                    let html = '<div class="list-group">';
+                    tasks.forEach(task => {
+                        const statusBadge = task.taskStatus === 2
+                            ? '<span class="badge bg-success">成功</span>'
+                            : task.taskStatus === 3
+                                ? '<span class="badge bg-danger">失败</span>'
+                                : '<span class="badge bg-warning">执行中</span>';
+
+                        html += `
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">任务: ${task.taskName}</h6>
+                                    <div>${statusBadge}</div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">执行时间：${formatDateTime(task.executeTime)} | 耗时：${task.executeDuration || 0}ms</small>
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewTaskReport(${task.id})">查看报告</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    document.getElementById('taskHistoryList').innerHTML = html;
+                } else {
+                    document.getElementById('taskHistoryList').innerHTML =
+                        '<p class="text-muted text-center">查询执行历史失败</p>';
+                }
+            })
+            .catch(err => {
+                console.error('查询执行历史失败:', err);
+                document.getElementById('taskHistoryList').innerHTML =
+                    '<p class="text-danger text-center">查询执行历史失败</p>';
+            });
+    });
+
+    // 查看任务报告
+    window.viewTaskReport = function(taskId) {
+        fetch(`${baseUrl}/testCase/reportDetail/${taskId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    updateReportOverview(data.data);
+                    new bootstrap.Tab(document.getElementById('execute-tab')).show();
+                } else {
+                    showMsg('taskHistoryList', `查看报告失败：${data.msg}`, false);
+                }
+            })
+            .catch(err => showMsg('taskHistoryList', `查看报告异常：${err.message}`, false));
+    };
+
+    // ==================== 页面初始化 ====================
+    window.onload = function() {
+        initChart();
+        loadProjectList();
+        // 页面加载时自动加载定时任务列表
+        setTimeout(() => {
+            loadScheduleList();
+        }, 500);
+    };
+</script>
+</body>
+</html>

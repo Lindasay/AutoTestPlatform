@@ -76,7 +76,7 @@ public class TestCaseServiceImpl extends ServiceImpl<TestCaseMapper, TestCase> i
         baseMapper.insert(testCase);
         
         // 7. 返回成功响应
-        return Result.success("测试用例新增成功");
+        return Result.success(testCase.getId(),"测试用例新增成功");
     }
 
     /**

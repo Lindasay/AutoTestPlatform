@@ -172,7 +172,6 @@ public class ProjectScript {
 
     /**
      * 检查项目是否有关联测试用例
-     *
      * @param projectId
      * @return
      */
@@ -196,7 +195,6 @@ public class ProjectScript {
 
     /**
      * 处理删除响应
-     *
      * @param response
      */
     private void handleDeleteResponse(Response response) {
@@ -236,6 +234,7 @@ public class ProjectScript {
         Response response = RequestHeaderConfig.getNoAuthRequest()
                 .param("pageNum", 1)
                 .param("pageSize", 10)
+                .param("projectName", "自动化测试项目")
                 .get("/project/page");
         return response.jsonPath().getLong("data.records[0].id");
     }

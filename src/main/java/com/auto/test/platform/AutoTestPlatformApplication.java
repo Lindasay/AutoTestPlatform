@@ -2,6 +2,7 @@ package com.auto.test.platform;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 /**
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * 指定factoryBean解决factoryBeanObjectType类型冲突问题
  * 项目核心入口
  */
+@EnableScheduling //开启定时任务
 @SpringBootApplication
 public class AutoTestPlatformApplication {
 

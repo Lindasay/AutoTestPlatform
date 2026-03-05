@@ -61,6 +61,20 @@ CREATE TABLE report_data (
     KEY idx_project_id (project_id) COMMENT '项目ID索引'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='测试报告表';
 
+-- 定时任务配置表（存储定时执行规则）
+DROP TABLE IF EXISTS test_case_schedule;
+
+CREATE TABLE test_case_schedule (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    project_id BIGINT NOT NULL COMMENT '关联项目ID',
+    cron_expression VARCHAR(50) NOT NULL COMMENT '定时表达式（如 0 0 2 * * ?）',
+    schedule_name VARCHAR(100) NOT NULL COMMENT '定时任务名称',
+    status TINYINT DEFAULT 1 COMMENT '状态：1-启用 0-禁用',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
+) COMMENT '测试用例定时执行配置表';
+
 -- 插入测试数据（项目表，用于第2天MySQL连接测试）
 INSERT INTO project (project_name, project_desc, status) VALUES 
 ('测试平台初始化项目', '企业级自动化测试平台初始化项目，用于测试MySQL连接', 1);

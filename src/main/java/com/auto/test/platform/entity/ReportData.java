@@ -61,4 +61,12 @@ public class ReportData {
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+
+    /**
+     * 数据库字段是extent_report_path，MyBatis-Plus会自动下划线转驼峰，无需额外注解
+     * 我还是加上吧
+     * ExtentReports报告路径
+     */
+    @TableField("extent_report_path")
+    private String extentReportPath;
 }

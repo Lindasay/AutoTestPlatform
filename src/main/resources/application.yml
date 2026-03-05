@@ -1,21 +1,41 @@
-# 全局配置
+# 服务器核心配置（新增/修复）
+server:
+  port: 8080 # 服务端口（可根据需要修改，避免冲突）
+  servlet:
+    context-path: /auto-test # 上下文路径（核心！适配静态资源/接口访问路径）
+  tomcat:
+    uri-encoding: UTF-8 # 解决URL中文乱码问题
+    max-threads: 200 # 最大线程数（适配并发）
+
+# Spring核心配置（修复+优化）
 spring:
   application:
     name: auto-test-platform # 项目名称，注册中心/日志中使用
   profiles:
     active: dev # 默认激活开发环境，可快速切换为test/prod
-  thymeleaf:
-    cache: false # 开发环境关闭页面缓存，修改前端页面无需重启项目
-  Jackson:
+  # 修复：Jackson首字母小写（原配置大写导致失效）
+  jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai # 全局时间时区，解决时区偏移问题
+  # Thymeleaf配置（优化：开发环境彻底关闭缓存）
+  thymeleaf:
+    cache: false # 关闭页面缓存
+    prefix: classpath:/templates/ # 页面前缀（默认，显式配置更清晰）
+    suffix: .html # 页面后缀
+    mode: HTML # 解析模式
+    encoding: UTF-8 # 编码
+  # 静态资源配置（核心！解决501问题，指定静态资源目录）
+  web:
+    resources:
+      static-locations: classpath:/static/,classpath:/public/,file:./report/ # 映射静态资源+报告目录
+      add-mappings: true # 开启静态资源映射（默认true，显式配置）
 
-
-# MyBatis-Plus 全局配置（通用）
+# MyBatis-Plus 全局配置（优化：区分环境打印SQL）
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true # 下划线转驼峰（适配数据库字段与实体类属性）
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境打印SQL，便于调试
+    # 优化：仅dev环境打印SQL，prod环境关闭（原配置固定打印，存在风险）
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # dev环境保留，prod环境改为NO_LOGGING
   mapper-locations: classpath:mapper/**/*.xml # 扫描mapper/xml目录下的SQL文件
   type-aliases-package: com.auto.test.platform.entity # 实体类别名扫描（简化Mapper代码）
   global-config:
@@ -23,7 +43,7 @@ mybatis-plus:
       id-type: AUTO # 主键自增（与数据库表一致）
       table-underline: true # 表名下划线命名（适配数据库表）
 
-# Knife4j配置（替代Swagger3，接口文档，第3天接口开发用）
+# Knife4j配置（替代Swagger3，接口文档）
 knife4j:
   enable: true
   openapi:
@@ -36,3 +56,18 @@ knife4j:
     servers:
       - url: http://localhost:8080/auto-test
         description: 开发环境接口地址
+
+# 日志配置（新增：区分环境，优化日志输出）
+logging:
+  level:
+    root: INFO # 根日志级别
+    com.auto.test.platform: DEBUG # 项目包下DEBUG级别，便于调试
+    org.springframework.web: WARN # 屏蔽Spring Web冗余日志
+    com.baomidou.mybatisplus: WARN # 屏蔽MyBatis-Plus冗余日志
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n" # 控制台日志格式
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n" # 文件日志格式
+  file:
+    name: logs/auto-test-platform.log # 日志文件存储路径
+    max-size: 100MB # 单个日志文件大小
+    max-history: 7 # 日志保留7天

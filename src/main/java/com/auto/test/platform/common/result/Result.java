@@ -4,6 +4,7 @@ import com.auto.test.platform.common.constant.ResponseCodeConstant;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * 全局通用返回结果
@@ -61,6 +62,14 @@ public class Result<T> implements Serializable {
         result.setCode(code);
         result.setMsg(msg);
         result.setData(null);
+        return  result;
+    }
+
+    public static <T> Result<T> success(T data, String message) {
+        Result<T> result = new Result<>();
+        result.setCode(ResponseCodeConstant.SUCCESS);
+        result.setMsg(message);
+        result.setData(data);
         return  result;
     }
 }

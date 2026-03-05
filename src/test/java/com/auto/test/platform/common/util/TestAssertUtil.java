@@ -3,6 +3,8 @@ package com.auto.test.platform.common.util;
 import io.restassured.response.Response;
 import org.testng.Assert;
 
+import java.util.Map;
+
 /**
  * 测试断言工具类 - 修复版
  */
@@ -40,7 +42,7 @@ public class TestAssertUtil {
     }
 
     /**
-     * 断言响应消息 - 修复：移除额外的断言
+     * 断言响应消息
      */
     public static void assertMessage(Response response, String expectedMessage) {
         String actualMessage = getMessageFromResponse(response);
@@ -132,5 +134,21 @@ public class TestAssertUtil {
 
     public static void assertEqualsMsg(String message, String actualMessage) {
         Assert.assertEquals(message,actualMessage);
+    }
+
+    public static void assertFieldExists(Response response, String jsonPath) {
+        Object value = response.jsonPath().get(jsonPath);
+        if (value == null) {
+            LogUtil.error("断言失败: 字段{}不存在, 响应体: {}",response.asString());
+        }
+        Assert.assertNotNull(value, "字段" + jsonPath + "不存在");
+    }
+
+    public static void assertTrue(boolean condition, String message) {
+        Assert.assertTrue(condition, message);
+    }
+
+    public static void assertNotNull(String filed, String message) {
+        Assert.assertNotNull(filed, message);
     }
 }

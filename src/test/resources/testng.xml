@@ -22,6 +22,5 @@
     <listeners>
         <listener class-name="com.auto.test.platform.common.util.RetryListener"/>
         <listener class-name="com.auto.test.platform.listener.ExtentReportListener"/>
-        <listener class-name="com.auto.test.platform.common.util.GlobalTestListener"></listener>
     </listeners>
 </suite>

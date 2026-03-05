@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * Token拦截器，验证所有需要认证的接口（适配SecurityConfig，用于接口Token验证）
- * 拦截需要认证的接口，校验Token有效性，解决“Token无效、未携带Token”问题
+ * 拦截需要认证的接口，校验Token有效性，解决"Token无效、未携带Token"问题
  * 与TokenUtil工具类联动，异常统一返回Result格式，对齐现有接口返回规范
  */
 @Slf4j
@@ -39,7 +39,6 @@ public class TokenInterceptor implements HandlerInterceptor {
         if (isExcludedPath(requestURI)){
             return true;
         }
-
 
         //获取Token
         String token = request.getHeader("Authorization");
@@ -88,30 +87,84 @@ public class TokenInterceptor implements HandlerInterceptor {
         return trimmedToken;
     }
 
-
+    /**
+     * 检查是否为排除路径（与SecurityConfig配置保持一致）
+     */
     private boolean isExcludedPath(String uri) {
-        // 公开接口（不需要Token）
-        if (uri.startsWith("/user/login") ||
-                uri.startsWith("/user/register") ||
-                uri.startsWith("/user/getByUsername") || uri.startsWith("/project") || uri.startsWith("/testCase")) {
+        log.debug("检查路径是否排除: {}", uri);
+
+        // 1. 处理带上下文路径的请求
+        if (uri.startsWith("/auto-test")) {
+            String pathWithoutContext = uri.substring("/auto-test".length());
+            if (pathWithoutContext.isEmpty()) {
+                pathWithoutContext = "/";
+            }
+            log.debug("去掉上下文路径后: {}", pathWithoutContext);
+
+            // 递归检查去掉上下文后的路径
+            return isExcludedPath(pathWithoutContext);
+        }
+
+        // 2. 核心修复：必须明确排除 index.html 和根路径
+        if (uri.equals("/index.html") ||
+                uri.equals("/") ||
+                uri.equals("/auto-test/index.html") ||
+                uri.equals("/auto-test/")) {
+            log.debug("路径为首页，直接排除: {}", uri);
             return true;
         }
 
-        // Swagger文档接口
+        // 3. 业务接口放行（与SecurityConfig一致）
+        if (uri.startsWith("/user/login") ||
+                uri.startsWith("/user/register") ||
+                uri.startsWith("/user/getByUsername") ||
+                uri.startsWith("/project") ||
+                uri.startsWith("/testCase") ||
+                uri.startsWith("/reportData")) {
+            log.debug("业务接口路径，排除: {}", uri);
+            return true;
+        }
+
+        // 4. Swagger相关路径放行
         if (uri.startsWith("/swagger") ||
                 uri.startsWith("/webjars") ||
                 uri.startsWith("/v3/api-docs") ||
                 uri.startsWith("/doc.html") ||
                 uri.equals("/favicon.ico")) {
+            log.debug("Swagger路径，排除: {}", uri);
             return true;
         }
 
-        // 带上下文的路径
-        if (uri.startsWith("/auto-test")) {
-            String pathWithoutContext = uri.substring("/auto-test".length());
-            return isExcludedPath(pathWithoutContext);
+        // 5. 静态资源路径放行（添加更多常见的静态资源后缀）
+        if (uri.startsWith("/static/") ||
+                uri.startsWith("/css/") ||
+                uri.startsWith("/js/") ||
+                uri.startsWith("/images/") ||
+                uri.startsWith("/fonts/") ||
+                uri.startsWith("/report/") ||
+                uri.endsWith(".html") ||
+                uri.endsWith(".css") ||
+                uri.endsWith(".js") ||
+                uri.endsWith(".png") ||
+                uri.endsWith(".jpg") ||
+                uri.endsWith(".jpeg") ||
+                uri.endsWith(".gif") ||
+                uri.endsWith(".ico") ||
+                uri.endsWith(".svg") ||
+                uri.endsWith(".woff") ||
+                uri.endsWith(".woff2") ||
+                uri.endsWith(".ttf")) {
+            log.debug("静态资源路径，排除: {}", uri);
+            return true;
         }
 
+        // 6. 错误处理路径放行
+        if (uri.equals("/error") || uri.startsWith("/error/")) {
+            log.debug("错误处理路径，排除: {}", uri);
+            return true;
+        }
+
+        log.debug("路径需要Token验证: {}", uri);
         return false;
     }
 
@@ -124,6 +177,5 @@ public class TokenInterceptor implements HandlerInterceptor {
 
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();
-
     }
 }

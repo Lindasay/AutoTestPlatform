@@ -35,4 +35,9 @@ public class LogUtil {
     public static void error(String message) {
         log.error(message);
     }
+
+    public static void info(String msg, Object total, Object size) {
+        log.info("【自动化脚本调试】" + msg, total, size);
+    }
+
 }

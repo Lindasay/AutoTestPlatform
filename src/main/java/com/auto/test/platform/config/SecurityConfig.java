@@ -2,6 +2,7 @@ package com.auto.test.platform.config;
 
 import com.auto.test.platform.common.interceptor.TokenInterceptor;
 import jakarta.annotation.Resource;
+import org.apache.ibatis.logging.stdout.StdOutImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -46,7 +48,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .httpBasic(httpBasic -> httpBasic.disable())
                 // 接口权限配置
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 放行Swagger所有路径（拆分多个requestMatchers，避免传参错误）
+                        // 1. 必须放行错误路径
+                        .requestMatchers("/error", "/auto-test/error").permitAll()
+
+                        // 2. Swagger相关
                         .requestMatchers("/doc.html").permitAll()
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/swagger-resources/**").permitAll()
@@ -60,11 +65,23 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/auto-test/v3/api-docs/**").permitAll()
                         .requestMatchers("/auto-test/swagger-ui/**").permitAll()
                         .requestMatchers("/auto-test/favicon.ico").permitAll()
-                        // 2. 放行用户登录注册接口
-                        .requestMatchers("/user/login", "/user/register","/user/getByUsername").permitAll()
-                        .requestMatchers("/project/**","/testCase/**").permitAll()
-                        .requestMatchers("/report/**","/static/**","/css/**", "/js/**", "/images/**").permitAll()
-                        // 3. 其他接口需认证
+
+                        // 3. 静态资源
+                        .requestMatchers("/static/**").permitAll()
+                        .requestMatchers("/report/**").permitAll()
+                        .requestMatchers("/auto-test/static/**").permitAll()
+                        .requestMatchers("/auto-test/report/**").permitAll()
+                        .requestMatchers("/index.html").permitAll()
+                        .requestMatchers("/auto-test/index.html").permitAll()
+
+                        // 4. 业务接口
+                        .requestMatchers("/user/login", "/user/register", "/user/getByUsername").permitAll()
+                        .requestMatchers("/project/**").permitAll()
+                        .requestMatchers("/testCase/**").permitAll()
+                        .requestMatchers("/reportData/**").permitAll()
+                        .requestMatchers("/schedule/**").permitAll()
+
+                        // 5. 其他请求需要认证
                         .anyRequest().authenticated()
                 );
         return http.build();
@@ -76,12 +93,45 @@ public class SecurityConfig implements WebMvcConfigurer {
         registry.addInterceptor(tokenInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        // 不需要Token的接口
-                        "/user/login", "/user/register", "/user/getByUsername","/project/**","/testCase/**","/report/**","/static/**","/css/**", "/js/**", "/images/**",
-                        // Swagger路径（不带上下文）
-                        "/doc.html", "/webjars/**", "/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui/**", "/favicon.ico",
-                        // Swagger路径（带上下文）
-                        "/auto-test/doc.html", "/auto-test/webjars/**", "/auto-test/swagger-resources/**", "/auto-test/v3/api-docs/**", "/auto-test/swagger-ui/**", "/auto-test/favicon.ico"
+                        "/error", "/auto-test/error",  // 添加错误路径排除
+                        "/user/login", "/user/register", "/user/getByUsername",
+                        "/project/**", "/testCase/**", "/reportData/**", "/schedule/**",
+                        "/doc.html", "/webjars/**", "/swagger-resources/**",
+                        "/v3/api-docs/**", "/swagger-ui/**",
+                        "/auto-test/doc.html", "/auto-test/webjars/**",
+                        "/auto-test/swagger-resources/**", "/auto-test/v3/api-docs/**",
+                        "/auto-test/swagger-ui/**",
+                        "/static/**", "/report/**",
+                        "/auto-test/static/**", "/auto-test/report/**",
+                        "/index.html", "/auto-test/index.html"
                 );
+    }
+
+    //静态资源映射
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 1. 报告目录映射（本地report文件夹）
+        String reportPath = "file:" + System.getProperty("user.dir") + "/report/";
+        registry.addResourceHandler("/report/**")
+                .addResourceLocations(reportPath);
+        registry.addResourceHandler("/auto-test/report/**")
+                .addResourceLocations(reportPath);
+
+        // 2. 静态资源映射（classpath:/static/）
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/auto-test/static/**")
+                .addResourceLocations("classpath:/static/");
+
+        // 3. 直接映射index.html（方便访问）
+        registry.addResourceHandler("/index.html")
+                .addResourceLocations("classpath:/static/index.html");
+        registry.addResourceHandler("/auto-test/index.html")
+                .addResourceLocations("classpath:/static/index.html");
+
+        // 打印日志，便于调试
+        System.out.println("=== 静态资源映射配置 ===");
+        System.out.println("报告目录本地路径: " + reportPath);
+        System.out.println("静态资源本地路径: classpath:/static/");
     }
 }

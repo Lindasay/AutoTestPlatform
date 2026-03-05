@@ -37,7 +37,7 @@
 		<hutool.version>5.8.22</hutool.version>
 		<easyexcel.version>3.3.2</easyexcel.version>
 		<fastjson2.version>2.0.42</fastjson2.version>
-		<allure-junit5.version>2.24.0</allure-junit5.version>
+		<allure-testng.version>2.24.0</allure-testng.version>
 		<knife4j.version>4.4.0</knife4j.version>
 	</properties>
 
@@ -147,7 +147,6 @@
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>${testng.version}</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!-- 3. 可视化报告：ExtentReports -->
@@ -155,7 +154,6 @@
 			<groupId>com.aventstack</groupId>
 			<artifactId>extentreports</artifactId>
 			<version>${extentreports.version}</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!-- 4. 报告样式依赖：jsoup（解决中文乱码/样式错乱） -->
@@ -163,7 +161,6 @@
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<version>${jsoup.version}</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!-- UI自动化（Playwright） -->
@@ -228,9 +225,8 @@
 		<!-- Allure测试报告 -->
 		<dependency>
 			<groupId>io.qameta.allure</groupId>
-			<artifactId>allure-junit5</artifactId>
-			<version>${allure-junit5.version}</version>
-			<scope>test</scope>
+			<artifactId>allure-testng</artifactId>
+			<version>${allure-testng.version}</version>
 		</dependency>
 
 		<!-- 4. Knife4j（接口文档，替代Swagger，美观、易用，第3天接口测试用） -->
@@ -286,16 +282,14 @@
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 				<includes>
-					<include>**/*.yml</include>
-					<include>**/*.properties</include>
-					<include>**/*.xml</include>
+					<include>**/*</include>
 				</includes>
 			</resource>
 			<resource>
 				<directory>src/main/java</directory>
 				<filtering>true</filtering>
 				<includes>
-					<include>**/*.xml</include>
+					<include>**/*</include>
 				</includes>
 			</resource>
 		</resources>

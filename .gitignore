@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# 测试文件
+allure-results/
+report/
+logs/
+*.log
