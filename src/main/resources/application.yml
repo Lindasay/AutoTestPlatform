@@ -24,7 +24,7 @@ spring:
     suffix: .html # 页面后缀
     mode: HTML # 解析模式
     encoding: UTF-8 # 编码
-  # 静态资源配置（核心！解决501问题，指定静态资源目录）
+  # 静态资源配置（核心！解决501的报错问题，指定静态资源目录）
   web:
     resources:
       static-locations: classpath:/static/,classpath:/public/,file:./report/ # 映射静态资源+报告目录
