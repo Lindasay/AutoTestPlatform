@@ -52,4 +52,22 @@ public class TestCaseSchedule implements Serializable {
      */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    // 临时字段 - 不映射到数据库
+    @TableField(exist = false)
+    private LocalDateTime nextExecutionTime;
+
+    @TableField(exist = false)
+    private Integer minutesUntilNext;
+
+    @TableField(exist = false)
+    private String nextExecutionTimeStr;
+
+    // Getter/Setter
+    public String getNextExecutionTimeStr() {
+        if (nextExecutionTime != null) {
+            return nextExecutionTime.toString();
+        }
+        return "";
+    }
 }

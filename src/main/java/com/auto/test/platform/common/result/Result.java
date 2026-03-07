@@ -72,4 +72,12 @@ public class Result<T> implements Serializable {
         result.setData(data);
         return  result;
     }
+
+    public static Result<?> error(String message) {
+        Result<?> result = new Result<>();
+        result.setCode(ResponseCodeConstant.SYSTEM_ERROR);
+        result.setMsg(message);
+        result.setData(null);
+        return  result;
+    }
 }

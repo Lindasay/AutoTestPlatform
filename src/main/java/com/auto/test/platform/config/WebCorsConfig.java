@@ -23,16 +23,13 @@ public class WebCorsConfig {
         //1.配置跨域规则
         CorsConfiguration config = new CorsConfiguration();
 
-        // ============== 修改点：将 addAllowedOrigin("*") 改为 setAllowedOriginPatterns ==============
-        // 使用 allowedOriginPatterns 替代 addAllowedOrigin，支持通配符模式且允许凭证
+        // 允许的来源模式
         config.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:*",            // 本地开发所有端口
                 "http://127.0.0.1:*",           // 本地开发所有端口
                 "https://*.test.com",           // 测试环境所有子域名
                 "https://*.prod.com"            // 生产环境所有子域名（根据实际情况修改）
         ));
-        // 注意：如果只需要特定几个域名，可以直接用 setAllowedOrigins
-        // config.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:3000"));
 
         // 允许所有请求头（如Token、Content-Type等）
         config.addAllowedHeader("*");

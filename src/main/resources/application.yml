@@ -17,18 +17,22 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai # 全局时间时区，解决时区偏移问题
-  # Thymeleaf配置（优化：开发环境彻底关闭缓存）
-  thymeleaf:
-    cache: false # 关闭页面缓存
-    prefix: classpath:/templates/ # 页面前缀（默认，显式配置更清晰）
-    suffix: .html # 页面后缀
-    mode: HTML # 解析模式
-    encoding: UTF-8 # 编码
   # 静态资源配置（核心！解决501的报错问题，指定静态资源目录）
   web:
     resources:
-      static-locations: classpath:/static/,classpath:/public/,file:./report/ # 映射静态资源+报告目录
+      static-locations: # 映射静态资源+报告目录
+        - classpath:/static/
+        - classpath:/public/
+        - file:./report/
+        - file:./target/allure-report/
+        - file:./jenkins-reports/
+      cache:
+        period: 0
       add-mappings: true # 开启静态资源映射（默认true，显式配置）
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 # MyBatis-Plus 全局配置（优化：区分环境打印SQL）
 mybatis-plus:
@@ -57,6 +61,32 @@ knife4j:
       - url: http://localhost:8080/auto-test
         description: 开发环境接口地址
 
+# Allure配置
+# Allure配置
+allure:
+  results:
+    directory: ./target/allure-results
+  report:
+    directory: ./target/allure-report
+  properties:
+    allure:
+      report:
+        language: en
+  version: 2.24.0
+
+
+# ExtentReports配置
+extent:
+  report:
+    directory: ./report
+    theme: dark
+
+# Jenkins集成配置
+jenkins:
+  integration:
+    enabled: true
+    report-keep-days: 30
+
 # 日志配置（新增：区分环境，优化日志输出）
 logging:
   level:
@@ -64,10 +94,10 @@ logging:
     com.auto.test.platform: DEBUG # 项目包下DEBUG级别，便于调试
     org.springframework.web: WARN # 屏蔽Spring Web冗余日志
     com.baomidou.mybatisplus: WARN # 屏蔽MyBatis-Plus冗余日志
+    io.qameta.allure: INFO
+    com.aventstack.extentreports: WARN
+
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n" # 控制台日志格式
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n" # 文件日志格式
   file:
     name: logs/auto-test-platform.log # 日志文件存储路径
-    max-size: 100MB # 单个日志文件大小
-    max-history: 7 # 日志保留7天
